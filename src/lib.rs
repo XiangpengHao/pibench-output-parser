@@ -68,6 +68,7 @@ impl BenchmarkOptions {
     }
 }
 
+#[derive(Eq, PartialEq, Debug)]
 pub struct LatencyResults {
     min: i32,
     p_50: i32,
@@ -77,6 +78,34 @@ pub struct LatencyResults {
     p_99_99: i32,
     p_99_999: i32,
     max: i32,
+}
+
+impl LatencyResults {
+    pub fn from_text(text: &str) -> Result<LatencyResults, Box<dyn error::Error>> {
+        let re = Regex::new(
+            r"Latencies .*
+            \s*min: (?P<min>\d+)\s*
+            \s*50%: (?P<p_50>\d+)\s*
+            \s*90%: (?P<p_90>\d+)\s*
+            \s*99%: (?P<p_99>\d+)\s*
+            \s*99.9%: (?P<p_99_9>\d+)\s*
+            \s*99.99%: (?P<p_99_99>\d+)\s*
+            \s*99.999%: (?P<p_99_999>\d+)\s*
+            \s*max: (?P<max>\d+)\s*",
+        )
+        .unwrap();
+        let caps = re.captures(text).unwrap();
+        Ok(LatencyResults {
+            min: caps["min"].parse::<i32>()?,
+            p_50: caps["p_50"].parse::<i32>()?,
+            p_90: caps["p_90"].parse::<i32>()?,
+            p_99: caps["p_99"].parse::<i32>()?,
+            p_99_9: caps["p_99_9"].parse::<i32>()?,
+            p_99_99: caps["p_99_99"].parse::<i32>()?,
+            p_99_999: caps["p_99_999"].parse::<i32>()?,
+            max: caps["max"].parse::<i32>()?,
+        })
+    }
 }
 
 pub struct BenchmarkResults {
@@ -107,6 +136,33 @@ mod tests {
     #[test]
     fn it_works() {
         assert_eq!(2 + 2, 4);
+    }
+
+    #[test]
+    fn parse_latency_results() {
+        let sample_string = "Latencies (998141 operations observed):
+                                    min: 882
+                                    50%: 7481
+                                    90%: 9121
+                                    99%: 43233
+                                    99.9%: 51150
+                                    99.99%: 69460
+                                    99.999%: 16985300
+                                    max: 22247728
+                                ";
+        let gt = LatencyResults {
+            min: 882,
+            p_50: 7481,
+            p_90: 9121,
+            p_99: 43233,
+            p_99_9: 51150,
+            p_99_99: 69460,
+            p_99_999: 16985300,
+            max: 22247728,
+        };
+        let latency = LatencyResults::from_text(sample_string);
+        assert!(latency.is_ok());
+        assert_eq!(latency.unwrap(), gt);
     }
 
     #[test]
