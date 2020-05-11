@@ -1,4 +1,4 @@
-# PiBench Result Parser
+# PiBench Output Parser
 
 A simple parser to parse the text output from [pibench](https://github.com/wangtzh/pibench).
 
