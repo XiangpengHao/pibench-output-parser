@@ -28,23 +28,23 @@ pub struct BenchmarkOptions {
 impl BenchmarkOptions {
     pub fn from_text(text: &str) -> Result<BenchmarkOptions, Box<dyn error::Error>> {
         let re = Regex::new(
-            r"# Records: (?P<records>\d+)\s*
-           \s*# Operations: (?P<operations>\d+)\s*
-           \s*# Threads: (?P<threads>\d+)\s*
-           \s*Sampling: (?P<sampling>\d+) ms\s*
-           \s*Latency: (?P<latency>\d*\.?\d*)\s*
-           .*
-           \s*Key size: (?P<key_size>\d+)\s*
-           \s*Value size: (?P<value_size>\d+)\s*
-           \s*Random seed: (?P<random_seed>\d+)\s*
-           \s*Key distribution: (?P<key_distribution>\w+)\s*
-           \s*Scan size: (?P<scan_size>\d+)\s*
-           .*
-           \s*Read: (?P<read>\d*\.?\d*)\s*
-           \s*Insert: (?P<insert>\d*\.?\d*)\s*
-           \s*Update: (?P<update>\d*\.?\d*)\s*
-           \s*Delete: (?P<delete>\d*\.?\d*)\s*
-           \s*Scan: (?P<scan>\d*\.?\d*)\s*",
+            "# Records: (?P<records>\\d+)\\s*\n\
+                \\s*# Operations: (?P<operations>\\d+)\\s*\n\
+               \\s*# Threads: (?P<threads>\\d+)\\s*\n\
+               \\s*Sampling: (?P<sampling>\\d+) ms\\s*\n\
+               \\s*Latency: (?P<latency>\\d*\\.?\\d*)\\s*\n\
+               .*\n\
+               \\s*Key size: (?P<key_size>\\d+)\\s*\n\
+               \\s*Value size: (?P<value_size>\\d+)\\s*\n\
+               \\s*Random seed: (?P<random_seed>\\d+)\\s*\n\
+               \\s*Key distribution: (?P<key_distribution>\\w+)\\s*\n\
+               \\s*Scan size: (?P<scan_size>\\d+)\\s*\n\
+               .*\n\
+               \\s*Read: (?P<read>\\d*\\.?\\d*)\\s*\n\
+               \\s*Insert: (?P<insert>\\d*\\.?\\d*)\\s*\n\
+               \\s*Update: (?P<update>\\d*\\.?\\d*)\\s*\n\
+               \\s*Delete: (?P<delete>\\d*\\.?\\d*)\\s*\n\
+               \\s*Scan: (?P<scan>\\d*\\.?\\d*)\\s*",
         )
         .unwrap();
         let caps = re.captures(text).unwrap();
@@ -83,15 +83,15 @@ pub struct LatencyResults {
 impl LatencyResults {
     pub fn from_text(text: &str) -> Result<Option<LatencyResults>, Box<dyn error::Error>> {
         let re = Regex::new(
-            r"Latencies .*
-            \s*min: (?P<min>\d+)\s*
-            \s*50%: (?P<p_50>\d+)\s*
-            \s*90%: (?P<p_90>\d+)\s*
-            \s*99%: (?P<p_99>\d+)\s*
-            \s*99.9%: (?P<p_99_9>\d+)\s*
-            \s*99.99%: (?P<p_99_99>\d+)\s*
-            \s*99.999%: (?P<p_99_999>\d+)\s*
-            \s*max: (?P<max>\d+)\s*",
+            "Latencies .*\n\
+            \\s*min: (?P<min>\\d+)\\s*\n\
+            \\s*50%: (?P<p_50>\\d+)\\s*\n\
+            \\s*90%: (?P<p_90>\\d+)\\s*\n\
+            \\s*99%: (?P<p_99>\\d+)\\s*\n\
+            \\s*99.9%: (?P<p_99_9>\\d+)\\s*\n\
+            \\s*99.99%: (?P<p_99_99>\\d+)\\s*\n\
+            \\s*99.999%: (?P<p_99_999>\\d+)\\s*\n\
+            \\s*max: (?P<max>\\d+)\\s*",
         )?;
         let caps = match re.captures(text) {
             Some(caps) => caps,
@@ -127,15 +127,15 @@ impl BenchmarkResults {
     pub fn from_text(text: &str) -> Result<BenchmarkResults, Box<dyn error::Error>> {
         const FLOATING_REGEX: &str = "[+\\-]?(?:0|[1-9]\\d*)(?:\\.\\d*)?(?:[eE][+\\-]?\\d+)?";
         let regex_raw = format!(
-            r"Load time: (?P<load_time>{floating}) milliseconds\s*
-            \s*Run time: (?P<run_time>{floating}) milliseconds\s*
-            \s*Throughput: (?P<throughput>{floating}) ops/s\s*
-            .*
-            \s*L3 misses: (?P<l3_misses>\d+)\s*
-            \s*DRAM Reads \(bytes\): (?P<dram_reads>\d+)\s*
-            \s*DRAM Writes \(bytes\): (?P<dram_writes>\d+)\s*
-            \s*NVM Reads \(bytes\): (?P<nvm_reads>\d+)\s*
-            \s*NVM Writes \(bytes\): (?P<nvm_writes>\d+)\s*",
+            "Load time: (?P<load_time>{floating}) milliseconds\\s*\n\
+            \\s*Run time: (?P<run_time>{floating}) milliseconds\\s*\n\
+            \\s*Throughput: (?P<throughput>{floating}) ops/s\\s*\n\
+            .*\n\
+            \\s*L3 misses: (?P<l3_misses>\\d+)\\s*\n\
+            \\s*DRAM Reads \\(bytes\\): (?P<dram_reads>\\d+)\\s*\n\
+            \\s*DRAM Writes \\(bytes\\): (?P<dram_writes>\\d+)\\s*\n\
+            \\s*NVM Reads \\(bytes\\): (?P<nvm_reads>\\d+)\\s*\n\
+            \\s*NVM Writes \\(bytes\\): (?P<nvm_writes>\\d+)\\s*",
             floating = FLOATING_REGEX
         );
         let re = Regex::new(&regex_raw)?;
@@ -158,12 +158,20 @@ impl BenchmarkResults {
 }
 
 pub struct PiBenchData {
-    benchmark_options: BenchmarkOptions,
-    benchmark_results: BenchmarkResults,
+    pub benchmark_options: BenchmarkOptions,
+    pub benchmark_results: BenchmarkResults,
 }
 
-pub fn parse(input: &str) -> PiBenchData {
-    unimplemented!()
+pub fn parse_text(input: &str) -> Option<PiBenchData> {
+    let benchmark_options = BenchmarkOptions::from_text(input);
+    let benchmark_results = BenchmarkResults::from_text(input);
+    if benchmark_options.is_err() || benchmark_results.is_err() {
+        return None;
+    }
+    return Some(PiBenchData {
+        benchmark_options: benchmark_options.unwrap(),
+        benchmark_results: benchmark_results.unwrap(),
+    });
 }
 
 #[cfg(test)]
@@ -234,7 +242,12 @@ mod tests {
 
     #[test]
     fn parse_benchmark_options() {
-        let sample_string = "Benchmark Options:
+        let sample_string = " Environment:
+                                    Time: Sat May  9 13:39:56 2020
+                                    CPU: 96 * Intel(R) Xeon(R) Gold 6252 CPU @ 2.10GHz
+                                    CPU Cache: 36608 KB
+                                    Kernel: Linux 5.5.4-arch1-1
+                                    Benchmark Options:
                                     Target: /home/hao/coding/bztree/release/libbztree_pibench_wrapper.so
                                     # Records: 10000000
                                     # Operations: 10000000

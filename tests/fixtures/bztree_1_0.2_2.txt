@@ -1,0 +1,132 @@
+Environment:
+	Time: Sat May  9 13:39:56 2020
+	CPU: 96 * Intel(R) Xeon(R) Gold 6252 CPU @ 2.10GHz
+	CPU Cache: 36608 KB
+	Kernel: Linux 5.5.4-arch1-1
+Benchmark Options:
+	Target: /home/hao/coding/bztree/release/libbztree_pibench_wrapper.so
+	# Records: 10000000
+	# Operations: 10000000
+	# Threads: 1
+	Sampling: 1000 ms
+	Latency: 0.1
+	Key prefix: 
+	Key size: 8
+	Value size: 8
+	Random seed: 1729
+	Key distribution: UNIFORM
+	Scan size: 100
+	Operations ratio:
+		Read: 0.2
+		Insert: 0.8
+		Update: 0
+		Delete: 0
+		Scan: 0
+creating new tree on pool.
+IBRS and IBPB supported  : yes
+STIBP supported          : yes
+Spec arch caps supported : yes
+IBRS enabled in the kernel   : yes
+STIBP enabled in the kernel  : no
+The processor is not susceptible to Rogue Data Cache Load: yes
+The processor supports enhanced IBRS                     : yes
+Overview:
+	Load time: 90691.6 milliseconds
+	Run time: 79034.7266 milliseconds
+	Throughput: 126526.6562 ops/s
+PCM Metrics:
+	L3 misses: 133057528
+	DRAM Reads (bytes): 4200676352
+	DRAM Writes (bytes): 3685705344
+	NVM Reads (bytes): 60263967872
+	NVM Writes (bytes): 11408676224
+Samples:
+	135452
+	126077
+	109243
+	113169
+	130939
+	135567
+	121449
+	113416
+	111755
+	112398
+	111176
+	113385
+	111445
+	110066
+	110886
+	113462
+	123521
+	134591
+	131305
+	124273
+	120344
+	123917
+	138668
+	130656
+	113692
+	109676
+	119898
+	127730
+	131344
+	134679
+	126379
+	113538
+	121192
+	131812
+	132371
+	136392
+	134372
+	129944
+	119944
+	125846
+	130472
+	134879
+	133789
+	127926
+	132046
+	134683
+	132895
+	122069
+	127499
+	139296
+	138837
+	138560
+	137719
+	130587
+	127101
+	129271
+	143697
+	142545
+	137786
+	134146
+	122866
+	120491
+	124451
+	133496
+	137061
+	141148
+	134751
+	118628
+	108032
+	118566
+	121416
+	129263
+	132702
+	131076
+	129714
+	124958
+	123505
+	125312
+	127393
+	3399
+Latencies (998141 operations observed):
+	min: 847
+	50%: 7469
+	90%: 9110
+	99%: 42793
+	99.9%: 51011
+	99.99%: 69897
+	99.999%: 17042253
+	max: 22122250
