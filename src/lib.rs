@@ -1,13 +1,15 @@
 use regex::{self, Regex};
+use serde::Serialize;
+use serde_json;
 use std::error;
 
-#[derive(PartialOrd, PartialEq, Debug)]
+#[derive(PartialOrd, PartialEq, Debug, Serialize)]
 pub enum KeyDistribution {
     UNIFORM = 0,
     ZIPFAN = 1,
 }
 
-#[derive(PartialEq, PartialOrd, Debug)]
+#[derive(PartialEq, PartialOrd, Debug, Serialize)]
 pub struct BenchmarkOptions {
     sampling: i32,
     latency: f32,
@@ -68,7 +70,7 @@ impl BenchmarkOptions {
     }
 }
 
-#[derive(Eq, PartialEq, PartialOrd, Debug)]
+#[derive(Eq, PartialEq, PartialOrd, Debug, Serialize)]
 pub struct LatencyResults {
     min: i32,
     p_50: i32,
@@ -110,7 +112,7 @@ impl LatencyResults {
     }
 }
 
-#[derive(PartialEq, PartialOrd, Debug)]
+#[derive(PartialEq, PartialOrd, Debug, Serialize)]
 pub struct BenchmarkResults {
     load_time: f32,
     run_time: f32,
@@ -157,21 +159,28 @@ impl BenchmarkResults {
     }
 }
 
+#[derive(Serialize)]
 pub struct PiBenchData {
     pub benchmark_options: BenchmarkOptions,
     pub benchmark_results: BenchmarkResults,
 }
 
-pub fn parse_text(input: &str) -> Option<PiBenchData> {
-    let benchmark_options = BenchmarkOptions::from_text(input);
-    let benchmark_results = BenchmarkResults::from_text(input);
-    if benchmark_options.is_err() || benchmark_results.is_err() {
-        return None;
+impl PiBenchData {
+    pub fn from_text(input: &str) -> Option<Self> {
+        let benchmark_options = BenchmarkOptions::from_text(input);
+        let benchmark_results = BenchmarkResults::from_text(input);
+        if benchmark_options.is_err() || benchmark_results.is_err() {
+            return None;
+        }
+        return Some(PiBenchData {
+            benchmark_options: benchmark_options.unwrap(),
+            benchmark_results: benchmark_results.unwrap(),
+        });
     }
-    return Some(PiBenchData {
-        benchmark_options: benchmark_options.unwrap(),
-        benchmark_results: benchmark_results.unwrap(),
-    });
+
+    pub fn to_json(&self) -> String {
+        serde_json::to_string(&self).unwrap()
+    }
 }
 
 #[cfg(test)]
