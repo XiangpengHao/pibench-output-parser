@@ -161,8 +161,8 @@ impl BenchmarkResults {
 
 #[derive(Serialize)]
 pub struct PiBenchData {
-    pub benchmark_options: BenchmarkOptions,
-    pub benchmark_results: BenchmarkResults,
+    pub options: BenchmarkOptions,
+    pub results: BenchmarkResults,
 }
 
 impl PiBenchData {
@@ -173,8 +173,8 @@ impl PiBenchData {
             return None;
         }
         return Some(PiBenchData {
-            benchmark_options: benchmark_options.unwrap(),
-            benchmark_results: benchmark_results.unwrap(),
+            options: benchmark_options.unwrap(),
+            results: benchmark_results.unwrap(),
         });
     }
 
