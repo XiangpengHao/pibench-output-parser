@@ -1,4 +1,7 @@
 # PiBench Output Parser
+[![](https://meritbadge.herokuapp.com/pibench-parser)](https://crates.io/crates/pibench-parser)
+[![npm version](https://badge.fury.io/js/pibench-parser.svg)](https://badge.fury.io/js/pibench-parser)
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 A simple parser to parse the text output from [pibench](https://github.com/wangtzh/pibench).
 
