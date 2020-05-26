@@ -2,14 +2,23 @@ use regex::{self, Regex};
 use serde::Serialize;
 use serde_json;
 use std::error;
+use wasm_bindgen::prelude::*;
 
-#[derive(PartialOrd, PartialEq, Debug, Serialize)]
+#[cfg(not(target_arch = "wasm32"))]
+mod c_ffi;
+
+#[cfg(not(target_arch = "wasm32"))]
+pub use c_ffi::*;
+
+#[wasm_bindgen]
+#[derive(PartialOrd, PartialEq, Debug, Serialize, Copy, Clone)]
 pub enum KeyDistribution {
     UNIFORM = 0,
     ZIPFAN = 1,
 }
 
-#[derive(PartialEq, PartialOrd, Debug, Serialize)]
+#[wasm_bindgen]
+#[derive(PartialEq, PartialOrd, Debug, Serialize, Copy, Clone)]
 pub struct BenchmarkOptions {
     sampling: i32,
     latency: f32,
@@ -70,7 +79,8 @@ impl BenchmarkOptions {
     }
 }
 
-#[derive(Eq, PartialEq, PartialOrd, Debug, Serialize)]
+#[wasm_bindgen]
+#[derive(Eq, PartialEq, PartialOrd, Debug, Serialize, Copy, Clone)]
 pub struct LatencyResults {
     min: i32,
     p_50: i32,
@@ -111,8 +121,8 @@ impl LatencyResults {
         }))
     }
 }
-
-#[derive(PartialEq, PartialOrd, Debug, Serialize)]
+#[wasm_bindgen]
+#[derive(PartialEq, PartialOrd, Debug, Serialize, Copy, Clone)]
 pub struct BenchmarkResults {
     load_time: f32,
     run_time: f32,
@@ -158,7 +168,7 @@ impl BenchmarkResults {
         })
     }
 }
-
+#[wasm_bindgen]
 #[derive(Serialize)]
 pub struct PiBenchData {
     pub options: BenchmarkOptions,
@@ -166,7 +176,14 @@ pub struct PiBenchData {
 }
 
 impl PiBenchData {
-    pub fn from_text(input: &str) -> Option<Self> {
+    pub fn to_json(&self) -> String {
+        serde_json::to_string(&self).unwrap()
+    }
+}
+
+#[wasm_bindgen]
+impl PiBenchData {
+    pub fn from_text(input: &str) -> Option<PiBenchData> {
         let benchmark_options = BenchmarkOptions::from_text(input);
         let benchmark_results = BenchmarkResults::from_text(input);
         if benchmark_options.is_err() || benchmark_results.is_err() {
@@ -177,32 +194,8 @@ impl PiBenchData {
             results: benchmark_results.unwrap(),
         });
     }
-
-    pub fn to_json(&self) -> String {
-        serde_json::to_string(&self).unwrap()
-    }
-}
-
-use libc::c_char;
-use std::ffi::{CStr, CString};
-#[no_mangle]
-pub extern "C" fn text_to_json(text: *const c_char) -> *mut c_char {
-    let c_str = unsafe {
-        assert!(!text.is_null());
-        CStr::from_ptr(text).to_str().unwrap()
-    };
-    let rv = PiBenchData::from_text(c_str).unwrap().to_json();
-    let c_str_rv = CString::new(rv).unwrap();
-    c_str_rv.into_raw()
-}
-
-#[no_mangle]
-pub extern "C" fn free_json_str(val: *mut c_char) {
-    unsafe {
-        if val.is_null() {
-            return;
-        }
-        CString::from_raw(val);
+    pub fn to_js_value(&self) -> JsValue {
+        JsValue::from_serde(&self).unwrap()
     }
 }
 
