@@ -242,11 +242,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-
-    #[test]
     fn parse_benchmark_results() {
         let sample_string = "Overview:
                                     Load time: 90801.3 milliseconds
