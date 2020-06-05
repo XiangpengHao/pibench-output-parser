@@ -22,24 +22,10 @@ Benchmark Options:
 		Update: 0
 		Delete: 0
 		Scan: 0
-creating new tree on pool.
-IBRS and IBPB supported  : yes
-STIBP supported          : yes
-Spec arch caps supported : yes
-IBRS enabled in the kernel   : yes
-STIBP enabled in the kernel  : no
-The processor is not susceptible to Rogue Data Cache Load: yes
-The processor supports enhanced IBRS                     : yes
 Overview:
 	Load time: 90717.5 milliseconds
 	Run time: 16247.1816 milliseconds
 	Throughput: 615491.3750 ops/s
-PCM Metrics:
-	L3 misses: 8631294
-	DRAM Reads (bytes): 759829312
-	DRAM Writes (bytes): 601310144
-	NVM Reads (bytes): 21004570432
-	NVM Writes (bytes): 441728
 Samples:
 	611617
 	616294

@@ -121,18 +121,48 @@ impl LatencyResults {
         }))
     }
 }
+
 #[wasm_bindgen]
-#[derive(PartialEq, PartialOrd, Debug, Serialize, Copy, Clone)]
+#[derive(PartialOrd, Eq, PartialEq, Debug, Clone, Serialize)]
+pub struct PCMResults {
+    l3_misses: u64,
+    dram_reads: u64,
+    dram_writes: u64,
+    nvm_reads: u64,
+    nvm_writes: u64,
+}
+
+impl PCMResults {
+    pub fn from_text(text: &str) -> Result<Option<PCMResults>, Box<dyn error::Error>> {
+        let regex_raw = "\\s*L3 misses: (?P<l3_misses>\\d+)\\s*\n\
+            \\s*DRAM Reads \\(bytes\\): (?P<dram_reads>\\d+)\\s*\n\
+            \\s*DRAM Writes \\(bytes\\): (?P<dram_writes>\\d+)\\s*\n\
+            \\s*NVM Reads \\(bytes\\): (?P<nvm_reads>\\d+)\\s*\n\
+            \\s*NVM Writes \\(bytes\\): (?P<nvm_writes>\\d+)\\s*";
+        let caps = match Regex::new(&regex_raw)?.captures(text) {
+            Some(caps) => caps,
+            None => return Ok(None),
+        };
+
+        Ok(Some(PCMResults {
+            l3_misses: caps["l3_misses"].parse::<u64>()?,
+            dram_reads: caps["dram_reads"].parse::<u64>()?,
+            dram_writes: caps["dram_writes"].parse::<u64>()?,
+            nvm_reads: caps["nvm_reads"].parse::<u64>()?,
+            nvm_writes: caps["nvm_writes"].parse::<u64>()?,
+        }))
+    }
+}
+
+#[wasm_bindgen]
+#[derive(PartialEq, PartialOrd, Debug, Serialize, Clone)]
 pub struct BenchmarkResults {
     load_time: f32,
     run_time: f32,
     throughput: f32,
-    l3_misses: Option<u64>,
-    dram_reads: Option<u64>,
-    dram_writes: Option<u64>,
-    nvm_reads: Option<u64>,
-    nvm_writes: Option<u64>,
+    pcm: Option<PCMResults>,
     latency: Option<LatencyResults>,
+    // samples: Vec<u32>,
 }
 
 impl BenchmarkResults {
@@ -141,29 +171,20 @@ impl BenchmarkResults {
         let regex_raw = format!(
             "Load time: (?P<load_time>{floating}) milliseconds\\s*\n\
             \\s*Run time: (?P<run_time>{floating}) milliseconds\\s*\n\
-            \\s*Throughput: (?P<throughput>{floating}) ops/s\\s*\n\
-            .*\n\
-            \\s*L3 misses: (?P<l3_misses>\\d+)\\s*\n\
-            \\s*DRAM Reads \\(bytes\\): (?P<dram_reads>\\d+)\\s*\n\
-            \\s*DRAM Writes \\(bytes\\): (?P<dram_writes>\\d+)\\s*\n\
-            \\s*NVM Reads \\(bytes\\): (?P<nvm_reads>\\d+)\\s*\n\
-            \\s*NVM Writes \\(bytes\\): (?P<nvm_writes>\\d+)\\s*",
+            \\s*Throughput: (?P<throughput>{floating}) ops/s",
             floating = FLOATING_REGEX
         );
         let re = Regex::new(&regex_raw)?;
         let caps = re.captures(text).unwrap();
 
         let latency_results = LatencyResults::from_text(text)?;
+        let pcm_results = PCMResults::from_text(text)?;
 
         Ok(BenchmarkResults {
             load_time: caps["load_time"].parse::<f32>()?,
             run_time: caps["run_time"].parse::<f32>()?,
             throughput: caps["throughput"].parse::<f32>()?,
-            l3_misses: Some(caps["l3_misses"].parse::<u64>()?),
-            dram_reads: Some(caps["dram_reads"].parse::<u64>()?),
-            dram_writes: Some(caps["dram_writes"].parse::<u64>()?),
-            nvm_reads: Some(caps["nvm_reads"].parse::<u64>()?),
-            nvm_writes: Some(caps["nvm_writes"].parse::<u64>()?),
+            pcm: pcm_results,
             latency: latency_results,
         })
     }
@@ -171,8 +192,8 @@ impl BenchmarkResults {
 #[wasm_bindgen]
 #[derive(Serialize)]
 pub struct PiBenchData {
-    pub options: BenchmarkOptions,
-    pub results: BenchmarkResults,
+    options: BenchmarkOptions,
+    results: BenchmarkResults,
 }
 
 impl PiBenchData {
@@ -226,11 +247,13 @@ mod tests {
             load_time: 90801.3,
             run_time: 79192.3672,
             throughput: 126274.7969,
-            l3_misses: Some(133342466),
-            dram_reads: Some(4197345472),
-            dram_writes: Some(3685394624),
-            nvm_reads: Some(60347831872),
-            nvm_writes: Some(11408209856),
+            pcm: Some(PCMResults {
+                l3_misses: 133342466,
+                dram_reads: 4197345472,
+                dram_writes: 3685394624,
+                nvm_reads: 60347831872,
+                nvm_writes: 11408209856,
+            }),
             latency: None,
         };
         let result = BenchmarkResults::from_text(sample_string);
