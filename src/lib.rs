@@ -162,7 +162,7 @@ pub struct BenchmarkResults {
     throughput: f32,
     pcm: Option<PCMResults>,
     latency: Option<LatencyResults>,
-    // samples: Vec<u32>,
+    samples: Option<Vec<u32>>,
 }
 
 impl BenchmarkResults {
@@ -171,7 +171,7 @@ impl BenchmarkResults {
         let regex_raw = format!(
             "Load time: (?P<load_time>{floating}) milliseconds\\s*\n\
             \\s*Run time: (?P<run_time>{floating}) milliseconds\\s*\n\
-            \\s*Throughput: (?P<throughput>{floating}) ops/s",
+            \\s*Throughput: (?P<throughput>{floating}) ops/s\n",
             floating = FLOATING_REGEX
         );
         let re = Regex::new(&regex_raw)?;
@@ -179,6 +179,7 @@ impl BenchmarkResults {
 
         let latency_results = LatencyResults::from_text(text)?;
         let pcm_results = PCMResults::from_text(text)?;
+        let samples = BenchmarkResults::capture_samples(text)?;
 
         Ok(BenchmarkResults {
             load_time: caps["load_time"].parse::<f32>()?,
@@ -186,7 +187,23 @@ impl BenchmarkResults {
             throughput: caps["throughput"].parse::<f32>()?,
             pcm: pcm_results,
             latency: latency_results,
+            samples,
         })
+    }
+
+    pub fn capture_samples(text: &str) -> Result<Option<Vec<u32>>, Box<dyn error::Error>> {
+        let regex_raw = "\\s*Samples:\\n(?P<samples>[\\s\\d+\\n?]*)";
+        let caps = match Regex::new(&regex_raw)?.captures(text) {
+            Some(caps) => caps,
+            None => return Ok(None),
+        };
+        let samples = caps["samples"]
+            .split("\n")
+            .map(|item| item.trim())
+            .filter(|item| !item.is_empty())
+            .map(|item| item.parse::<u32>())
+            .collect::<Result<Vec<_>, _>>();
+        Ok(Some(samples?))
     }
 }
 #[wasm_bindgen]
@@ -242,6 +259,9 @@ mod tests {
                                     NVM Reads (bytes): 60347831872
                                     NVM Writes (bytes): 11408209856
                                 Samples:
+                                	135452
+	                                126077
+	                                109243
                                 ";
         let gt = BenchmarkResults {
             load_time: 90801.3,
@@ -255,6 +275,7 @@ mod tests {
                 nvm_writes: 11408209856,
             }),
             latency: None,
+            samples: Some(vec![135452, 126077, 109243]),
         };
         let result = BenchmarkResults::from_text(sample_string);
         assert!(result.is_ok());
