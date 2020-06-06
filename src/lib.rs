@@ -4,6 +4,8 @@ use serde_json;
 use std::error;
 use wasm_bindgen::prelude::*;
 
+mod utils;
+
 #[cfg(not(target_arch = "wasm32"))]
 mod c_ffi;
 
@@ -222,6 +224,7 @@ impl PiBenchData {
 #[wasm_bindgen]
 impl PiBenchData {
     pub fn from_text(input: &str) -> Option<PiBenchData> {
+        utils::set_panic_hook();
         let benchmark_options = BenchmarkOptions::from_text(input);
         let benchmark_results = BenchmarkResults::from_text(input);
         if benchmark_options.is_err() || benchmark_results.is_err() {
