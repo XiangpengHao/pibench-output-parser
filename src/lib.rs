@@ -6,6 +6,19 @@ use wasm_bindgen::prelude::*;
 
 mod utils;
 
+#[cfg(target_arch = "wasm32")]
+extern crate console_error_panic_hook;
+#[cfg(target_arch = "wasm32")]
+extern crate web_sys;
+
+// A macro to provide `println!(..)`-style syntax for `console.log` logging.
+#[cfg(target_arch = "wasm32")]
+macro_rules! log {
+    ( $( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
+}
+
 #[cfg(not(target_arch = "wasm32"))]
 mod c_ffi;
 
@@ -173,7 +186,7 @@ impl BenchmarkResults {
         let regex_raw = format!(
             "Load time: (?P<load_time>{floating}) milliseconds\\s*\n\
             \\s*Run time: (?P<run_time>{floating}) milliseconds\\s*\n\
-            \\s*Throughput: (?P<throughput>{floating}) ops/s\n",
+            \\s*Throughput: (?P<throughput>{floating}) ops/s",
             floating = FLOATING_REGEX
         );
         let re = Regex::new(&regex_raw)?;
