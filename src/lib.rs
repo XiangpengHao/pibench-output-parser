@@ -12,7 +12,6 @@ extern crate console_error_panic_hook;
 extern crate web_sys;
 
 // A macro to provide `println!(..)`-style syntax for `console.log` logging.
-// #[cfg(target_arch = "wasm32")]
 macro_rules! log {
     ( $( $t:tt )* ) => {
         #[cfg(target_arch = "wasm32")]
@@ -224,11 +223,39 @@ impl BenchmarkResults {
         Ok(Some(samples?))
     }
 }
+
+#[wasm_bindgen]
+#[derive(Serialize, Debug, Eq, PartialEq)]
+struct BenchmarkEnv {
+    time: String,
+    cpu: String,
+    cache: String,
+    kernel: String,
+}
+
+impl BenchmarkEnv {
+    pub fn from_text(text: &str) -> Result<Self, Box<dyn error::Error>> {
+        let regex_raw = "\\s*Time: (?P<time>.*)\\s*\n\
+                                \\s*CPU: (?P<cpu>.*)\\s*\n\
+                                \\s*CPU Cache: (?P<cache>.*)\\s*\n\
+                                \\s*Kernel: (?P<kernel>.*)\\s*\n";
+        let caps = Regex::new(&regex_raw)?.captures(text).unwrap();
+
+        Ok(BenchmarkEnv {
+            time: caps["time"].to_string(),
+            cpu: caps["cpu"].to_string(),
+            cache: caps["cache"].to_string(),
+            kernel: caps["kernel"].to_string(),
+        })
+    }
+}
+
 #[wasm_bindgen]
 #[derive(Serialize)]
 pub struct PiBenchData {
     options: BenchmarkOptions,
     results: BenchmarkResults,
+    env: BenchmarkEnv,
 }
 
 impl PiBenchData {
@@ -243,12 +270,16 @@ impl PiBenchData {
         utils::set_panic_hook();
         let benchmark_options = BenchmarkOptions::from_text(input);
         let benchmark_results = BenchmarkResults::from_text(input);
-        if benchmark_options.is_err() || benchmark_results.is_err() {
+        let benchmark_env = BenchmarkEnv::from_text(input);
+
+        if benchmark_options.is_err() || benchmark_results.is_err() || benchmark_env.is_err() {
             return None;
         }
+
         return Some(PiBenchData {
             options: benchmark_options.unwrap(),
             results: benchmark_results.unwrap(),
+            env: benchmark_env.unwrap(),
         });
     }
     pub fn to_js_value(&self) -> JsValue {
@@ -371,5 +402,31 @@ mod tests {
         let options = BenchmarkOptions::from_text(sample_string);
         assert!(options.is_ok());
         assert_eq!(options.unwrap(), gt);
+    }
+
+    #[test]
+    fn parse_benchmark_env() {
+        let sample_string=" Environment:
+                                    Time: Sat May  9 13:39:56 2020
+                                    CPU: 96 * Intel(R) Xeon(R) Gold 6252 CPU @ 2.10GHz
+                                    CPU Cache: 36608 KB
+                                    Kernel: Linux 5.5.4-arch1-1
+                                    Benchmark Options:
+                                    Target: /home/hao/coding/bztree/release/libbztree_pibench_wrapper.so
+                                    # Records: 10000000
+                                    # Operations: 10000000
+                                    # Threads: 1
+                                    Sampling: 1000 ms";
+
+        let gt = BenchmarkEnv {
+            time: "Sat May  9 13:39:56 2020".to_string(),
+            cpu: "96 * Intel(R) Xeon(R) Gold 6252 CPU @ 2.10GHz".to_string(),
+            cache: "36608 KB".to_string(),
+            kernel: "Linux 5.5.4-arch1-1".to_string(),
+        };
+
+        let env = BenchmarkEnv::from_text(sample_string);
+        assert!(env.is_ok());
+        assert_eq!(env.unwrap(), gt);
     }
 }
