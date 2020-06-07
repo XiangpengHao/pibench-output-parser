@@ -12,9 +12,10 @@ extern crate console_error_panic_hook;
 extern crate web_sys;
 
 // A macro to provide `println!(..)`-style syntax for `console.log` logging.
-#[cfg(target_arch = "wasm32")]
+// #[cfg(target_arch = "wasm32")]
 macro_rules! log {
     ( $( $t:tt )* ) => {
+        #[cfg(target_arch = "wasm32")]
         web_sys::console::log_1(&format!( $( $t )* ).into());
     }
 }
@@ -207,10 +208,12 @@ impl BenchmarkResults {
     }
 
     pub fn capture_samples(text: &str) -> Result<Option<Vec<u32>>, Box<dyn error::Error>> {
-        let regex_raw = "\\s*Samples:\\n(?P<samples>[\\s\\d+\\n?]*)";
+        let regex_raw = r"Samples:\s*(?P<samples>(\s*\d+\n*)*)";
         let caps = match Regex::new(&regex_raw)?.captures(text) {
             Some(caps) => caps,
-            None => return Ok(None),
+            None => {
+                return Ok(None);
+            }
         };
         let samples = caps["samples"]
             .split("\n")
@@ -272,7 +275,8 @@ mod tests {
                                 Samples:
                                 	135452
 	                                126077
-	                                109243
+                                    109243
+                                Latencies (994788 operations
                                 ";
         let gt = BenchmarkResults {
             load_time: 90801.3,
